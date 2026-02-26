@@ -1,0 +1,222 @@
+# ####################bigip oc -01
+
+root@(localhost)(cfg-sync Changes Pending)(Standby)(/Common)(tmos)# list net vlan all
+net vlan cis_mgmt {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 144
+    interfaces {
+        1.2 { }
+    }
+    tag 4005
+}
+net vlan oc_data {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 128
+    interfaces {
+        1.1 { }
+    }
+    tag 4004
+}
+root@(localhost)(cfg-sync Changes Pending)(Standby)(/Common)(tmos)# list net self all
+net self oc_data {
+    address 10.1.10.20/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan oc_data
+}
+net self cis_mgmt {
+    address 10.1.30.4/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan cis_mgmt
+}
+net self cis_mgmt_float {
+    address 10.1.30.201/24
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan cis_mgmt
+}
+net self oc_data_float {
+    address 10.1.10.200/24
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan oc_data
+}
+
+
+# ##########################bigip oc-02
+
+[root@localhost:Active:Changes Pending] config # tmsh
+root@(localhost)(cfg-sync Changes Pending)(Active)(/Common)(tmos)# list net vlan all
+net vlan cis_mgmt {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 144
+    interfaces {
+        1.2 { }
+    }
+    tag 4031
+}
+net vlan oc_data {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 128
+    interfaces {
+        1.1 { }
+    }
+    tag 4030
+}
+root@(localhost)(cfg-sync Changes Pending)(Active)(/Common)(tmos)# list net sel
+Components:
+  self         self-allow   
+root@(localhost)(cfg-sync Changes Pending)(Active)(/Common)(tmos)# list net self all
+Options:
+  all              all-properties   
+Properties:
+  allow-service    
+root@(localhost)(cfg-sync Changes Pending)(Active)(/Common)(tmos)# list net self all
+net self cis_mgmt_float {
+    address 10.1.30.201/24
+    allow-service all
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan cis_mgmt
+}
+net self oc_data {
+    address 10.1.10.21/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan oc_data
+}
+net self cis_mgmt {
+    address 10.1.30.5/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan cis_mgmt
+}
+net self oc_data_float {
+    address 10.1.10.200/24
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan oc_data
+}
+
+
+
+
+#############bigip k3s-01 ##################
+net vlan cis_mgmt {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 144
+    interfaces {
+        1.2 { }
+    }
+    tag 4007
+}
+net vlan k3s_data {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 128
+    interfaces {
+        1.1 { }
+    }
+    tag 4006
+}
+
+net self k3s_data {
+    address 10.1.20.4/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan k3s_data
+}
+net self cis_mgmt {
+    address 10.1.30.6/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan cis_mgmt
+}
+net self cis_mgmt_float {
+    address 10.1.30.200/24
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan cis_mgmt
+}
+
+
+# bigip k3s-02
+
+root@(localhost)(cfg-sync In Sync)(Active)(/Common)(tmos)# list net vlan all
+net vlan cis_mgmt {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 144
+    interfaces {
+        1.2 { }
+    }
+    tag 4007
+}
+net vlan k3s_data {
+    dag-adjustment none
+    fwd-mode l3
+    if-index 160
+    interfaces {
+        1.1 { }
+    }
+    sflow {
+        poll-interval-global no
+        sampling-rate-global no
+    }
+    tag 4008
+}
+root@(localhost)(cfg-sync In Sync)(Active)(/Common)(tmos)# list net self all
+net self cis_mgmt {
+    address 10.1.30.7/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan cis_mgmt
+}
+net self cis_mgmt_float {
+    address 10.1.30.200/24
+    floating enabled
+    traffic-group traffic-group-1
+    unit 1
+    vlan cis_mgmt
+}
+net self k3s_data_float {
+    address 10.1.20.200/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan k3s_data
+}
+net self k3s_data {
+    address 10.1.20.5/24
+    allow-service {
+        default
+    }
+    traffic-group traffic-group-local-only
+    vlan k3s_data
+}
