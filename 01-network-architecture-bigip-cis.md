@@ -51,14 +51,14 @@ The environment contains:
 
 # 3. BIG-IP OpenShift HA Pair
 
-## 3.1 BIGIP-OC-01 (Standby)
+## 3.1 BIGIP-OC-01 
 
 ### VLANs
 
-| VLAN | Interface | Tag |
+| VLAN | Interface | 
 |---|---|---|
-| `oc_data` | 1.1 | 4004 |
-| `cis_mgmt` | 1.2 | 4005 |
+| `oc_data` | 1.1 | 
+| `cis_mgmt` | 1.2 | 
 
 ### Self IPs
 
@@ -75,10 +75,10 @@ The environment contains:
 
 ### VLANs
 
-| VLAN | Interface | Tag |
+| VLAN | Interface |
 |---|---|---|
-| `oc_data` | 1.1 | 4030 |
-| `cis_mgmt` | 1.2 | 4031 |
+| `oc_data` | 1.1 | 
+| `cis_mgmt` | 1.2 | 
 
 ### Self IPs
 
@@ -114,10 +114,10 @@ The environment contains:
 
 ### VLANs
 
-| VLAN | Interface | Tag |
+| VLAN | Interface |
 |---|---|---|
-| `k3s_data` | 1.1 | 4006 |
-| `cis_mgmt` | 1.2 | 4007 |
+| `k3s_data` | 1.1 |
+| `cis_mgmt` | 1.2 |
 
 ### Self IPs
 
@@ -238,14 +238,3 @@ Advantages:
 | k3s | 10.1.30.200 | 10.1.20.200 |
 
 ---
-
-# 8. Next Steps (Guide Flow)
-
-1. Configure BIG-IP base networking
-2. Configure HA + traffic-group
-3. Deploy IPAM controller
-4. Deploy CIS
-5. Deploy sample app
-6. Create VirtualServer CR
-7. Validate VIP creation
-8. Perform HA failover test
