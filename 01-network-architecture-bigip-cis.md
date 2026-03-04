@@ -64,14 +64,14 @@ The environment contains:
 
 | Name | Address | Type | Traffic Group |
 |---|---|---|---|
-| `oc_data` | 10.1.10.20/24 | Non-floating | local-only |
-| `cis_mgmt` | 10.1.30.4/24 | Non-floating | local-only |
-| `oc_data_float` | 10.1.10.200/24 | Floating | traffic-group-1 |
+| `oc_data` | 10.1.10.21/24 | Non-floating | local-only |
+| `cis_mgmt` | 10.1.30.21/24 | Non-floating | local-only |
+| `oc_data_float` | 10.1.10.20/24 | Floating | traffic-group-1 |
 | `cis_mgmt_float` | 10.1.30.201/24 | Floating | traffic-group-1 |
 
 ---
 
-## 3.2 BIGIP-OC-02 (Active)
+## 3.2 BIGIP-OC-02 
 
 ### VLANs
 
@@ -84,9 +84,9 @@ The environment contains:
 
 | Name | Address | Type | Traffic Group |
 |---|---|---|---|
-| `oc_data` | 10.1.10.21/24 | Non-floating | local-only |
-| `cis_mgmt` | 10.1.30.5/24 | Non-floating | local-only |
-| `oc_data_float` | 10.1.10.200/24 | Floating | traffic-group-1 |
+| `oc_data` | 10.1.10.22/24 | Non-floating | local-only |
+| `cis_mgmt` | 10.1.30.22/24 | Non-floating | local-only |
+| `oc_data_float` | 10.1.10.20/24 | Floating | traffic-group-1 |
 | `cis_mgmt_float` | 10.1.30.201/24 | Floating | traffic-group-1 |
 
 ---
@@ -123,8 +123,9 @@ The environment contains:
 
 | Name | Address | Type | Traffic Group |
 |---|---|---|---|
-| `k3s_data` | 10.1.20.4/24 | Non-floating | local-only |
-| `cis_mgmt` | 10.1.30.6/24 | Non-floating | local-only |
+| `k3s_data` | 10.1.20.31/24 | Non-floating | local-only |
+| `cis_mgmt` | 10.1.30.31/24 | Non-floating | local-only |
+| `k3s_data_float` | 10.1.10.30/24 | Floating | traffic-group-1 |
 | `cis_mgmt_float` | 10.1.30.200/24 | Floating | traffic-group-1 |
 
 ---
@@ -133,18 +134,18 @@ The environment contains:
 
 ### VLANs
 
-| VLAN | Interface | Tag |
+| VLAN | Interface |
 |---|---|---|
-| `k3s_data` | 1.1 | 4008 |
-| `cis_mgmt` | 1.2 | 4007 |
+| `k3s_data` | 1.1 |
+| `cis_mgmt` | 1.2 |
 
 ### Self IPs
 
 | Name | Address | Type | Traffic Group |
 |---|---|---|---|
-| `k3s_data` | 10.1.20.5/24 | Non-floating | local-only |
-| `cis_mgmt` | 10.1.30.7/24 | Non-floating | local-only |
-| `k3s_data_float` | 10.1.20.200/24 | Floating | traffic-group-1 |
+| `k3s_data` | 10.1.20.32/24 | Non-floating | local-only |
+| `cis_mgmt` | 10.1.30.32/24 | Non-floating | local-only |
+| `k3s_data_float` | 10.1.20.30/24 | Floating | traffic-group-1 |
 | `cis_mgmt_float` | 10.1.30.200/24 | Floating | traffic-group-1 |
 
 ---
@@ -179,10 +180,9 @@ cis_mgmt_float (10.1.30.x)
 
 Used for:
 
-- AS3 declarations
-- LTM object creation
+
+- Bbject creation
 - pool/member updates
-- IPAM coordination
 
 ---
 
@@ -196,45 +196,9 @@ VIP (oc_data / k3s_data)
    |
 BIG-IP
    |
-Pool Members (Cluster Nodes / Pods)
+Pool Members (Cluster Pods)
 ```
 
 ---
 
-# 6. Design Decisions
 
-### Separate BIG-IP pair per cluster
-
-Benefits:
-
-- Isolation between environments
-- Independent failover domains
-- Easier troubleshooting
-- Cleaner IPAM pools
-
----
-
-### Shared CIS Management Network
-
-All BIG-IPs expose CIS management via:
-
-```
-10.1.30.0/24
-```
-
-Advantages:
-
-- Simplifies CIS configuration
-- Consistent automation logic
-- Easier lab scaling
-
----
-
-# 7. HA Model Summary
-
-| Stack | Floating Mgmt | Floating Data |
-|---|---|---|
-| OpenShift | 10.1.30.201 | 10.1.10.200 |
-| k3s | 10.1.30.200 | 10.1.20.200 |
-
----
