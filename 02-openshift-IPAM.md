@@ -1,99 +1,142 @@
-# Here we are installing the ipam on the openshift cluster
-### ipam is conatiner that inchagre of IP ALLOCATION across the virual services we are deploying
-### we are configuring ipam with predefined ranges that we later mention as labels to the virtual server we are creating 
-### connect to web shell on ocp-provisioner server
-![picture of the ocp-provisioner](/img/02-1.png)
-### connect to the "web shell" and login as cloud-user
-```text
-su cloud-user
+# F5 IPAM Controller — OpenShift Deployment Guide
 
-# make yourself a folder which you going to work with 
-mkdir /home/cloud-user/ipam
+> **IPAM purpose:** Automatic IP allocation for F5 BIG-IP VirtualServer CRDs via labels (`test` / `prod`)
+> **Image version:** `f5networks/f5-ipam-controller:0.1.12`
+> **Cluster:** OpenShift with 3 masters and 2 workers
+
+---
+
+## Overview
+
+The IPAM controller is a container responsible for **IP allocation** across the Virtual Services we deploy. We configure it with predefined IP ranges and later reference those ranges as labels on the VirtualServer CRDs we create.
+
+---
+
+## Step 1 — Connect to the OCP Provisioner Web Shell
+
+Open the web shell on the **ocp-provisioner** server:
+
+![picture of the ocp-provisioner](/img/02-1.png)
+
+Log in as `cloud-user` and create a working directory:
+
+```bash
+su cloud-user
+mkdir -p /home/cloud-user/ipam
 cd /home/cloud-user/ipam
 ```
-### add the f5 ipam controller helm to the chart :
-```text
-helm repo add f5-ipam-stable https://f5networks.github.io/f5-ipam-controller/helm-charts/stable
 
-# make sure its added to the local charts 
-#"f5-ipam-stable" has been added to your repositories
+---
+
+## Step 2 — Add the F5 IPAM Helm Repository
+
+```bash
+helm repo add f5-ipam-stable https://f5networks.github.io/f5-ipam-controller/helm-charts/stable
 ```
-### we will change parametes for the values yaml , this will create the neccesery components for bring up the IPAM :
-```text
+
+Verify it was added:
+
+```
+"f5-ipam-stable" has been added to your repositories
+```
+
+---
+
+## Step 3 — Download and Customise values.yaml
+
+Download the default values file — this will create the necessary components for bringing up the IPAM (RBAC, ServiceAccount, PersistentVolume, and image configuration):
+
+```bash
 wget -O value.yaml https://raw.githubusercontent.com/F5Networks/f5-ipam-controller/main/helm-charts/f5-ipam-controller/values.yaml
 ```
 
-#### for installing the ipam we will need several components which the chart defened with ( we just making the changes we need) , such as - RBAC , ServiceAccount, persistance volume and image version (also from where to pull)
+Edit the following sections to prepare for installation.
 
-#### edit the following lines on the values to prepare for applying
+### 3a — Set the IP Ranges
 
-#### change the ip range ip part 
-```text
+Find the `ip_range` line and replace it with your environment's subnets:
 
-#find the following line :  
-# REQUIRED Params if provider is f5-ip-provider
+```yaml
+# Find this line:
   ip_range: '{"test":"172.16.1.1-172.16.1.5", "prod":"172.16.1.50-172.16.1.55"}'
 
-#replace the range line with the following line:
+# Replace with:
   ip_range: '{"test":"10.1.10.100-10.1.10.120", "prod":"10.1.10.130-10.1.10.150"}'
-
 ```
 
-#### we need also to change the persist volume configurations, we will have to create persistence 
+### 3b — Configure the PersistentVolumeClaim
 
-```text
-#set pvc creation for ture
+Set PVC creation to `true` and configure the storage class:
+
+```yaml
 pvc:
-  # set create tag to true to create new persistent volume claim and set storageClassName,accessMode and storage
   create: true
-
-  #name of the  persistent volume claim to be used
-  # If not set and create is true, a name is generated using the fullname template
   name:
-
-  #if create set to false below parameters will be ignored
   storageClassName: openebs-hostpath
   accessMode: ReadWriteOnce
   storage: 1Gi
-
 ```
-####  we will have to push the image of the ipam to the registry to be avialable on the openshift
-```text
-#change the following for use the local internal images 
-image: 
-  # Use the tag to target a specific version of the Controller
-  user: docker.io/f5networks  #add docker.io as we will download from docker.io the image and we will pull localy
-  repo: f5-ipam-controller
-  pullPolicy: IfNotPresent #this from always to ifNotPresent
-  version: 0.1.12 #this from 0.1.5 to 0.1.12
 
+### 3c — Set the Image Configuration
 
+Update the image section to pull from Docker Hub with the correct version:
+
+```yaml
+image:
   user: docker.io/f5networks
   repo: f5-ipam-controller
   pullPolicy: IfNotPresent
   version: 0.1.12
 ```
 
+---
 
-#### lets login into the each node , pull the image and create the folder for the PVC
-```text
-oc debug node/worker-1.ocp.f5-udf.com - to login into the node
-# wait few seconds
-# while you see the following :
-#sh-5.1#
-# type:
+## Step 4 — Pull the IPAM Image to the Worker Nodes
+
+Log in to each worker node, pull the image into podman, and create the PVC directory.
+
+#### Worker 1
+
+```bash
+oc debug node/worker-1.ocp.f5-udf.com
+# Wait a few seconds until you see: sh-5.1#
 chroot /host
-
-# now download the ipam image to the podman :
 podman pull docker.io/f5networks/f5-ipam-controller:0.1.12
-
-# do the same for worker2 
-oc debug node/worker-2.ocp.f5-udf.comß
-
+exit
+exit
 ```
 
-#### lets create local persistence volume on worker1
-```text
+#### Worker 2
+
+Repeat the same steps for Worker 2:
+
+```bash
+oc debug node/worker-2.ocp.f5-udf.com
+chroot /host
+podman pull docker.io/f5networks/f5-ipam-controller:0.1.12
+exit
+exit
+```
+
+---
+
+## Step 5 — Create a Local PersistentVolume on Worker 1
+
+First, create the directory on the worker node:
+
+```bash
+oc debug node/worker-1.ocp.f5-udf.com
+chroot /host
+mkdir -p /var/f5-ipam
+chmod 777 /var/f5-ipam
+exit
+exit
+```
+
+Now create and apply the PV manifest:
+
+```bash
+cat <<'EOF' > pv-ipam.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -115,39 +158,53 @@ spec:
           operator: In
           values:
             - worker-1.ocp.f5-udf.com
+EOF
 
-# create the folder on the worker node :
-[cloud-user@ocp-provisioner ipam]$ oc debug node/worker-1.ocp.f5-udf.com
-Starting pod/worker-1ocpf5-udfcom-debug-g4q2x ...
-To use host binaries, run `chroot /host`. Instead, if you need to access host namespaces, run `nsenter -a -t 1`.
-Pod IP: 10.1.10.9
-If you don't see a command prompt, try pressing enter.
-sh-5.1# chroot /host
-sh-5.1# mkdir -p /var/f5-ipam
-chmod 777 /var/f5-ipam
-exit
-exit
+oc apply -f pv-ipam.yaml
+```
 
-[cloud-user@ocp-provisioner ipam]$ oc apply -f pvc.yaml 
+Expected output:
+
+```
 persistentvolume/ipam-local-pv created
-
-
 ```
 
-#### In production, the F5 IPAM Controller must use a dynamically provisioned PersistentVolume backed by a resilient CSI storage class (e.g., Ceph RBD, cloud block storage, or enterprise SAN) with volumeBindingMode: WaitForFirstConsumer, ensuring the IPAM database is durable, node-independent, and survives pod restarts or node failures.
+> **Production note:** In production, the F5 IPAM Controller should use a dynamically provisioned PersistentVolume backed by a resilient CSI storage class (e.g., Ceph RBD, cloud block storage, or enterprise SAN) with `volumeBindingMode: WaitForFirstConsumer`, ensuring the IPAM database is durable, node-independent, and survives pod restarts or node failures.
 
-#### run 
-```text
+---
+
+## Step 6 — Install IPAM with Helm
+
+```bash
+helm install ipam f5-ipam-stable/f5-ipam-controller \
+  -f value.yaml \
+  -n kube-system
+```
+
+---
+
+## Step 7 — Verify the Deployment
+
+Check that the IPAM pod is running and ready:
+
+```bash
 oc get pods -A | grep ipam
-
-# and make sure the pod is running and ready
-
-kube-system                                        ipam-f5-ipam-controller-5f766c75cf-ncgpc                          1/1     Running     0          5m30s
-```
-#### we will configure the ipam values such as the addresses ranges and the label for each range (there are DEV and PROD)
-```text
-'{"test":"172.16.1.1-172.16.1.5", "prod":"172.16.1.50-172.16.1.55"}'
 ```
 
-#### we configured the ranges so, when we will deploy new VS CRD object, we will mention the label (which is either prod or test) and the VirtualServer on teh BIGIP will get ip by the ipam allocation related to the pool test or prod
+Expected output:
 
+```
+kube-system   ipam-f5-ipam-controller-5f766c75cf-ncgpc   1/1   Running   0   5m30s
+```
+
+---
+
+## How IPAM Labels Work
+
+The IPAM controller is configured with two IP ranges, each identified by a label:
+
+```json
+{"test":"10.1.10.100-10.1.10.120", "prod":"10.1.10.130-10.1.10.150"}
+```
+
+When deploying a new VirtualServer CRD object, you specify the label (`test` or `prod`) using the `ipamLabel` field. The IPAM controller then allocates an IP address from the corresponding pool and assigns it to the VirtualServer on the BIG-IP.
