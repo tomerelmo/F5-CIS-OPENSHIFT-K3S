@@ -366,4 +366,50 @@ Commercial support is available at
 </body>
 </html>
 ```
-ß
+
+#### so here we are having a pair of bigip on HA that have the same virtual server configurations , they are fault tolerrent and backup each other  
+
+
+#### login to webshell of both of the BIGIP-OC pair
+![webshell](/img/03-webshell.png)
+#### enter the following command to search where is the active BIGIP:
+```text
+[root@BIGIP-OC-02:Active:In Sync] config # tmsh   
+root@(BIGIP-OC-02)(cfg-sync In Sync)(Active)(/Common)(tmos)# show sys failover
+Failover active for 1d 23:19:21
+root@(BIGIP-OC-02)(cfg-sync In Sync)(Active)(/Common)(tmos)# 
+```
+
+#### restart the active bigip and immediatly test the if the application still working from the web shell of "OCP-Provisioner"
+```
+# on active BIGIP-OC :
+root@(BIGIP-OC-02)(cfg-sync In Sync)(Active)(/Common)(tmos)# quit
+[root@BIGIP-OC-02:Active:In Sync] config # reboot
+Terminated
+
+# immedialty check the application from the ocp-provisioner
+curl http://10.1.10.100 -H "Host: nginx-demo.cis.lab"
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+
+# check that the other bigip is active
+root@(BIGIP-OC-01)(cfg-sync Disconnected)(Active)(/Common)(tmos)# show sys failover
+Failover active for 0d 00:01:12
+root@(BIGIP-OC-01)(cfg-sync Disconnected)(Active)(/Common)(tmos)# 
+
+# see that the othe bigip active for 1 minute and 12 seconds only
+```
