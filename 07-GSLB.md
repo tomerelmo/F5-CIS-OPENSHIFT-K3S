@@ -106,8 +106,7 @@ spec:
   dnsRecordType: A
   loadBalanceMethod: ratio
   pools:
-    - name: nginx-demo.cis.lab
-      dnsRecordType: A
+    - dnsRecordType: A
       loadBalanceMethod: ratio
       dataServerName: /Common/BIGIP-OC-01
       monitor:
