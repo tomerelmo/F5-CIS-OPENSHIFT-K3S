@@ -21,6 +21,8 @@ modify net vlan k3s_data  interfaces delete { all }
 
 modify net vlan cis_mgmt interfaces add {1.1}
 modify net vlan k3s_data  interfaces add {1.2}
+
+create auth partition k8s
 ```
 
 Verify on each device:
@@ -192,11 +194,6 @@ securityContext:
 
 ```bash
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
-
-# Install F5 CIS Custom Resource Definitions
-kubectl apply -f https://raw.githubusercontent.com/F5Networks/k8s-bigip-ctlr/master/docs/config_examples/customResourceDefinitions/customresourcedefinitions.yml
-
 
 helm install ipam f5-ipam-stable/f5-ipam-controller \
   -f values.yaml \

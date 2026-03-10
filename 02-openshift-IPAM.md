@@ -72,7 +72,7 @@ Set PVC creation to `true` and configure the storage class:
 pvc:
   create: true
   name:
-  storageClassName: openebs-hostpath
+  storageClassName: ipam
   accessMode: ReadWriteOnce
   storage: 1Gi
 ```

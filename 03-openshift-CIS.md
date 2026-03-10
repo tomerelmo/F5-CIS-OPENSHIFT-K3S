@@ -12,6 +12,7 @@
 Now that the IPAM is installed, we can move on to installing CIS.
 
 ```bash
+cd /home/cloud-user/
 git clone https://github.com/F5Networks/k8s-bigip-ctlr.git
 cd k8s-bigip-ctlr/helm-charts/f5-bigip-ctlr/
 ```
@@ -118,7 +119,7 @@ Press **Import** and upload the RPM:
 
 ![import AS3](/img/03-import-as3.png)
 
-**Repeat the upload on all four BIG-IP devices:**
+**Repeat the upload on the *active* BIG-IP devices:**
 
 - BIGIP-OC-01
 - BIGIP-OC-02
@@ -227,7 +228,7 @@ ensure CRDs are installed first
 Install the CRD definitions:
 
 ```bash
-cd /home/cloud-user/cis/k8s-bigip-ctlr/docs/config_examples/customResourceDefinitions/
+cd /home/cloud-user/k8s-bigip-ctlr/docs/config_examples/customResourceDefinitions/
 oc apply -f customresourcedefinitions.yml
 ```
 

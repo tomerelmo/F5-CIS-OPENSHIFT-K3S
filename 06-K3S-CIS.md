@@ -113,7 +113,7 @@ https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.56.0/f5-
 
 #### Upload the RPM to both BIG-IP devices:
 
-Log in to the TMUI of **BIGIP-K3S-01**:
+If not done with openshift section Log in to the TMUI of **BIGIP-K3S-01 or 02 (the active one)**:
 
 ```
 user: admin
@@ -130,7 +130,6 @@ Press **Import** and upload the RPM:
 
 ![import AS3](/img/03-import-as3.png)
 
-**Repeat the same upload on BIGIP-K3S-02.**
 
 ---
 
@@ -160,7 +159,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-demo
-  namespace: default
+  namespace: kube-system
 spec:
   replicas: 2
   selector:
@@ -181,7 +180,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-demo
-  namespace: default
+  namespace: kube-system
 spec:
   type: NodePort
   selector:
@@ -218,7 +217,7 @@ apiVersion: cis.f5.com/v1
 kind: VirtualServer
 metadata:
   name: nginx-demo-vs
-  namespace: default
+  namespace: kube-system
   labels:
     f5cr: "true"
 spec:
